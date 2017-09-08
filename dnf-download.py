@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 import urllib.request
 import os
+from subprocess import check_output
+
+RPM_TO_DL = []
 
 def intro():
     print("""
@@ -19,6 +22,7 @@ def menu():
 
     if choice == 1:
         get_all()
+        download()
 
     elif choice == 99:
         exit()
@@ -26,11 +30,35 @@ def menu():
 def get_all():
     file_name = get_file_name()
 
-    #download file
-    path = 'ftp://rpmfind.net/linux/fedora/linux/updates/26/x86_64/p/' + file_name + '.rpm'
-    urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + file_name + '.rpm')
+    RPM_TO_DL.append(file_name)
+    # enter dnf command to find dependencies
 
+    for item in RPM_TO_DL:
+        stdout = check_output(['dnf', 'repoquery', '--deplist', item])
+        stdout = stdout.decode('utf-8')
+        #print(type(stdout))
+        stdout = stdout.split('\n')
+        #print(stdout)
 
+        for line in stdout:
+            if 'provider: ' in line:
+                package_name = line[line.index('provider: ') + 10:]
+                if package_name not in RPM_TO_DL:
+                    RPM_TO_DL.append(package_name)
+
+def download():
+    # download file
+    for file_name in RPM_TO_DL:
+        fp = urllib.request.urlopen('http://rpmfind.net/linux/rpm2html/search.php?query=' + file_name)
+        mybytes = fp.read()
+        mystr = mybytes.decode('utf8')
+        fp.close()
+        trim = mystr[mystr.index('Fedora 26 for x86_64'):]
+        link_start = trim.index('ftp://')
+        link_end = trim.index('.rpm')
+        path = trim[link_start:link_end+4]
+
+        urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + file_name + '.rpm')
 
 
 def get_file_name():
