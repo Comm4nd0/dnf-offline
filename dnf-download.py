@@ -49,17 +49,37 @@ def get_all():
 def download():
     # download file
     for file_name in RPM_TO_DL:
+        file_copy = file_name
+        front = 0
+        while True:
+            name_split = file_copy.index('-')
+            try:
+                int(file_copy[name_split + 1:name_split + 2])
+                file_name = file_name[:name_split+front]
+                print(file_name)
+                break
+            except ValueError:
+                print('split!')
+                front += len(file_copy[:name_split])
+                file_copy = file_copy[name_split+1:]
+            except Exception as err:
+                print(err)
+                break
+
         fp = urllib.request.urlopen('http://rpmfind.net/linux/rpm2html/search.php?query=' + file_name)
         mybytes = fp.read()
         mystr = mybytes.decode('utf8')
         fp.close()
-        trim = mystr[mystr.index('Fedora 26 for x86_64'):]
-        link_start = trim.index('ftp://')
-        link_end = trim.index('.rpm')
-        path = trim[link_start:link_end+4]
+        try:
+            trim = mystr[mystr.index('Fedora 26 for x86_64'):]
+            link_start = trim.index('ftp://')
+            link_end = trim.index('.rpm')
+            path = trim[link_start:link_end+4]
 
-        urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + file_name + '.rpm')
-
+            urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + file_name + '.rpm')
+        except Exception as err:
+            print(Err)
+            print(path)
 
 def get_file_name():
     file_name = str(input("Enter file name: "))
