@@ -32,13 +32,10 @@ def get_all():
 
     RPM_TO_DL.append(file_name)
     # enter dnf command to find dependencies
-
     for item in RPM_TO_DL:
         stdout = check_output(['dnf', 'repoquery', '--deplist', item])
         stdout = stdout.decode('utf-8')
-        #print(type(stdout))
         stdout = stdout.split('\n')
-        #print(stdout)
 
         for line in stdout:
             if 'provider: ' in line:
@@ -47,24 +44,29 @@ def get_all():
                     RPM_TO_DL.append(package_name)
 
 def download():
-    # download file
+    # find file to download, web scrape the crap out of it
     for file_name in RPM_TO_DL:
         file_copy = file_name
         front = 0
         while True:
-            name_split = file_copy.index('-')
             try:
-                int(file_copy[name_split + 1:name_split + 2])
-                file_name = file_name[:name_split+front]
-                print(file_name)
-                break
+                name_split = file_copy.index('-')
+                try_int = True
             except ValueError:
-                print('split!')
-                front += len(file_copy[:name_split])
-                file_copy = file_copy[name_split+1:]
-            except Exception as err:
-                print(err)
-                break
+                continue
+            if try_int:
+                try:
+                    int(file_copy[name_split + 1:name_split + 2])
+                    file_name = file_name[:name_split+front]
+                    break
+                except ValueError:
+                    # split that shit!
+                    front += len(file_copy[:name_split])
+                    file_copy = file_copy[name_split+1:]
+                except Exception as err:
+                    print(err)
+                    print(path)
+                    break
 
         search = urllib.request.urlopen('http://rpmfind.net/linux/rpm2html/search.php?query=' + file_name)
         mybytes = search.read()
@@ -75,7 +77,7 @@ def download():
             link_start = trim.index('ftp://')
             link_end = trim.index('.rpm')
             path = trim[link_start:link_end+4]
-
+            # download it!
             urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + file_name + '.rpm')
         except Exception as err:
             print(err)
