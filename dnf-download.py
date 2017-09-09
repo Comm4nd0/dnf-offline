@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 import urllib.request
 import os
+#import os.path
 from subprocess import check_output
 
 RPM_TO_DL = []
+FOLDER = ''
 
 def intro():
     print("""
@@ -27,9 +29,15 @@ def menu():
     elif choice == 99:
         exit()
 
+def create_folder():
+    if not os.path.exists(FOLDER):
+        os.makedirs(FOLDER)
+    else:
+        pass
+
 def get_all():
     file_name = get_file_name()
-
+    create_folder()
     RPM_TO_DL.append(file_name)
     # enter dnf command to find dependencies
     for item in RPM_TO_DL:
@@ -46,6 +54,7 @@ def get_all():
 def download():
     # find file to download, web scrape the crap out of it
     for file_name in RPM_TO_DL:
+        full_file_name = file_name
         file_copy = file_name
         front = 0
         while True:
@@ -68,23 +77,26 @@ def download():
                     print(path)
                     break
 
-        search = urllib.request.urlopen('http://rpmfind.net/linux/rpm2html/search.php?query=' + file_name)
-        mybytes = search.read()
-        mystr = mybytes.decode('utf8')
-        search.close()
-        try:
-            trim = mystr[mystr.index('Fedora 26 for x86_64'):]
-            link_start = trim.index('ftp://')
-            link_end = trim.index('.rpm')
-            path = trim[link_start:link_end+4]
-            # download it!
-            urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + file_name + '.rpm')
-        except Exception as err:
-            print(err)
-            print(path)
+        if not os.path.isfile(FOLDER + '/' + full_file_name):
+            search = urllib.request.urlopen('http://rpmfind.net/linux/rpm2html/search.php?query=' + file_name)
+            mybytes = search.read()
+            mystr = mybytes.decode('utf8')
+            search.close()
+            try:
+                trim = mystr[mystr.index('Fedora 26 for x86_64'):]
+                link_start = trim.index('ftp://')
+                link_end = trim.index('.rpm')
+                path = trim[link_start:link_end+4]
+                # download it!
+                urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + full_file_name + '.rpm')
+            except Exception as err:
+                print(err)
+                print(path)
 
 def get_file_name():
+    global FOLDER
     file_name = str(input("Enter file name: "))
+    FOLDER = file_name + '-packages'
 
     return file_name
 
