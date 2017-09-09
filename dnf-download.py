@@ -88,7 +88,7 @@ def download():
                 link_end = trim.index('.rpm')
                 path = trim[link_start:link_end+4]
                 # download it!
-                urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + full_file_name + '.rpm')
+                urllib.request.urlretrieve(path, os.getcwd() + '/' + FOLDER + '/' + full_file_name + '.rpm')
             except Exception as err:
                 print(err)
                 print(path)
