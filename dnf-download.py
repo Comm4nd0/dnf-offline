@@ -53,7 +53,7 @@ def download():
                 name_split = file_copy.index('-')
                 try_int = True
             except ValueError:
-                continue
+                break
             if try_int:
                 try:
                     int(file_copy[name_split + 1:name_split + 2])
