@@ -66,10 +66,10 @@ def download():
                 print(err)
                 break
 
-        fp = urllib.request.urlopen('http://rpmfind.net/linux/rpm2html/search.php?query=' + file_name)
-        mybytes = fp.read()
+        search = urllib.request.urlopen('http://rpmfind.net/linux/rpm2html/search.php?query=' + file_name)
+        mybytes = search.read()
         mystr = mybytes.decode('utf8')
-        fp.close()
+        search.close()
         try:
             trim = mystr[mystr.index('Fedora 26 for x86_64'):]
             link_start = trim.index('ftp://')
@@ -78,7 +78,7 @@ def download():
 
             urllib.request.urlretrieve(path, os.getcwd() + '/rpm/' + file_name + '.rpm')
         except Exception as err:
-            print(Err)
+            print(err)
             print(path)
 
 def get_file_name():
